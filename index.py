@@ -1,4 +1,4 @@
-
+import re
 def valida(sequence):
     seqm = sequence.upper()
     total = seqm.count("A") +seqm.count("T") + seqm.count("C") + seqm.count("G")
@@ -14,9 +14,17 @@ def frequencia(sequence):
     assert valida(sequence)
     dict = {}
     for i in sequence.upper():
-        if(i in dict): dict[i] +=1
+        if(i in dict): 
+            dict[i] +=1
         else : dict[i]=1
     return dict
+
+def porcentagem(sequence, dict):
+    assert valida(sequence)
+    porc = {}
+    for i in dict.keys():
+        porc[i] = str(dict[i]/len(sequence) * 100) + "%"
+    return porc
 
 
 def reverse(sequence):
@@ -72,6 +80,50 @@ def traducao(sequencia, inicio):
     assert valida(sequencia)
     proteina = ""
     for i in range(inicio, len(sequencia)-2, 3):
-        proteina = proteina + "-" + tc[sequencia[i:i+3].upper()]
-    return proteina 
+        proteina = proteina +  tc[sequencia[i:i+3].upper()]
+    return proteina
 
+def all_proteins(sequence):
+    list = []
+    rever= reverse(sequence)
+    list.append(traducao(sequence, 0))
+    list.append(traducao(sequence, 1))
+    list.append(traducao(sequence, 2))
+    list.append(traducao(rever, 0))
+    list.append(traducao(rever, 1))
+    list.append(traducao(rever, 2))
+    return list
+
+def possible_proteins(sequence):
+    proteinas = []
+    atuais = []
+    for i in sequence:
+        if(i=="_"):
+            if (atuais):
+                for k in atuais: proteinas.append(k)
+                atuais = []
+        else:
+            if(i=="M"):
+                atuais.append("")
+            for x in range(len(atuais)):
+                atuais[x] +=i
+    return proteinas
+
+def all_possible_proteinas(sequence):
+    proteinas = []
+
+    lista = all_proteins(sequence)
+    for i in lista:
+        x = possible_proteins(i)
+        if(x): proteinas.append(x)
+    return proteinas 
+
+    
+def find_all_occurrences_re (sequence, pat):
+    occur = re.finditer(pat, sequence)
+    
+    res = []
+    for x in occur:
+        res.append(x.span()[0])
+    print(res)
+    return res
