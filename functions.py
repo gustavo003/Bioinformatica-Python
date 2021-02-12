@@ -1,4 +1,7 @@
 import re
+import numpy as np
+
+
 def valida(sequence):
     seqm = sequence.upper()
     total = seqm.count("A") +seqm.count("T") + seqm.count("C") + seqm.count("G")
@@ -11,24 +14,23 @@ def valida(sequence):
 
 
 def frequencia(sequence):
-    assert valida(sequence)
     dict = {}
     for i in sequence.upper():
         if(i in dict): 
             dict[i] +=1
         else : dict[i]=1
+        
     return dict
 
 def porcentagem(sequence, dict):
     assert valida(sequence)
     porc = {}
     for i in dict.keys():
-        porc[i] = str(dict[i]/len(sequence) * 100) + "%"
+        porc[i] = str(round((dict[i]/len(sequence) * 100), 2)) + "%"
     return porc
 
 
 def reverse(sequence):
-    assert valida(sequence)
     comp = ""
     for i in sequence:
         if (i=="A"):
@@ -77,7 +79,6 @@ def aminoacido(amino):
 
 
 def traducao(sequencia, inicio):
-    assert valida(sequencia)
     proteina = ""
     for i in range(inicio, len(sequencia)-2, 3):
         proteina = proteina +  tc[sequencia[i:i+3].upper()]
@@ -120,10 +121,66 @@ def all_possible_proteinas(sequence):
 
     
 def find_all_occurrences_re (sequence, pat):
+    assert(valida(pat))
     occur = re.finditer(pat, sequence)
     
     res = []
     for x in occur:
         res.append(x.span()[0])
-    print(res)
+  
     return res
+
+def needleman_wunsch(seq1, seq2):
+    mn = np.zeros((len(seq1)+1, len(seq2)+1))
+    check = np.zeros((len(seq1), len(seq2)))
+    backtrack = np.zeros((len(seq1)+1, len(seq2)+1))
+    match  = 1
+    not_match = -1
+    gap = -2
+    for i in range(len(seq1)):
+        for j in range(len(seq2)):
+            if(seq1[i]==seq2[j]):
+                check[i][j]=match
+            else:
+                check[i][j]=not_match
+    for i in range(len(seq1)+1):
+        mn[i][0] = i*gap
+        backtrack[i][0] = 2
+    for i in range(len(seq2)+1):
+        mn[0][i] = i*gap
+        backtrack[0][i] = 3
+    for i in range(1, len(seq1)+1):
+        for j in range(1, len(seq2)+1):    
+            mn[i][j] =  max(mn[i-1][j-1]+check[i-1][j-1], mn[i-1][j]+gap, mn[i][j-1]+ gap)
+            backtrack[i][j] = (max2(mn[i-1][j-1]+check[i-1][j-1], mn[i-1][j]+gap, mn[i][j-1]+ gap))
+
+    print(Backtrack(seq1, seq2, backtrack))
+def max2(x, y, z):
+    if(x>y):
+        if(x>z): return 1
+        else: return 3
+    else:
+        if(y>z): return 2
+        else: return 3
+
+def Backtrack(seq1, seq2, back):
+    res = ["", ""]
+    i = len(seq1)
+    j = len(seq2)
+    while(i>0 or j >0):
+        if(back[i][j]==1):
+            res[0] = seq1[i-1] + res[0]
+            res[1]  = seq2[j-1] +  res[1]
+            i-=1
+            j-=1
+        elif(back[i][j]==3):
+            res[0] = "-" + res[0]
+            res[1] = seq2[j-1]+res[1]
+            j-=1
+        else:
+            res[0] = seq1[i-1] + res[0]
+            res[1] = "-" + res[1]
+            i-=1
+    
+    return res
+
